@@ -1,2 +1,3 @@
 # macro
-Repository creation failed.
+
+내가 사용하려고 만든 티켓팅 매크로
