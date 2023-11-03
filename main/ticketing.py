@@ -24,7 +24,7 @@ CLICK_GROUP = (1245,830) #타겟 그룹 좌표
 
 
 def find_color_on_screen(color, region=None, tolerance=10):
-    screen = pyautogui.screenshot('my_screenshot.png',region=region)
+    screen = pyautogui.screenshot('../img/my_screenshot.png',region=region)
     screen_np = np.array(screen.convert('RGB'))
     lower_bound = np.array([color[0] - tolerance, color[1] - tolerance, color[2] - tolerance])
     upper_bound = np.array([color[0] + tolerance, color[1] + tolerance, color[2] + tolerance])
