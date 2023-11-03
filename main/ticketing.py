@@ -1,4 +1,5 @@
-import macro_config as mc
+# import macro_config as mc
+from config import macro_config as mc
 import cv2
 import numpy as np
 import pyautogui
