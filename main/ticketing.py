@@ -1,4 +1,3 @@
-# import macro_config as mc
 from config import macro_config as mc
 import cv2
 import numpy as np
@@ -7,9 +6,9 @@ import time
 import threading
 import random
 import keyboard
-import os
 import webbrowser
 import datetime
+import pyscreenshot
 
 
 SEARCH_REGION = mc.SEARCH_REGION  # 좌석 선택 영역
@@ -19,13 +18,11 @@ CLICK_TICKET = mc.CLICK_TICKET  # 티켓 버튼 좌표
 CHROME_PATH = "open -a /Applications/Google\ Chrome.app %s"
 
 
-RECAPTCHA_REGION = (711, 205, 1844-711, 1074-205)  # 리캡챠 감지 영역
-CLICK_GROUP = (1245,830) #타겟 그룹 좌표
-
-
 def find_color_on_screen(color, region=None, tolerance=10):
-    screen = pyautogui.screenshot('../img/my_screenshot.png',region=region)
-    screen_np = np.array(screen.convert('RGB'))
+    screenshot=pyscreenshot.grab(bbox=(mc.SEARCH_REGION_ax,mc.SEARCH_REGION_ay,mc.SEARCH_REGION_bx,mc.SEARCH_REGION_by))
+    screenshot.save('../img/pyscreenshot.png')
+    # screen = pyautogui.screenshot('../img/my_screenshot.png',region=region)
+    screen_np = np.array(screenshot.convert('RGB'))
     lower_bound = np.array([color[0] - tolerance, color[1] - tolerance, color[2] - tolerance])
     upper_bound = np.array([color[0] + tolerance, color[1] + tolerance, color[2] + tolerance])
     mask = cv2.inRange(screen_np, lower_bound, upper_bound)
@@ -52,8 +49,8 @@ def thread_SearchColor(stop_event):
             # pyautogui.click()
             ############
             # 예매 완료 버튼 클릭
-            # pyautogui.moveTo(*CLICK_DESTINATION)
-            # pyautogui.click()
+            pyautogui.moveTo(*CLICK_DESTINATION)
+            pyautogui.click()
         time.sleep(0.001)
 
 def thread_Refresh(stop_event, region):
@@ -69,11 +66,13 @@ def thread_Refresh(stop_event, region):
 def main():
     webbrowser.register("chrome", None, webbrowser.BackgroundBrowser(CHROME_PATH))
     stop_event = threading.Event()
+
     while True:
         pause_time = datetime.datetime.now().strftime("%H:%M:%S")
         print(f"\n[{pause_time}]매크로가 중지된 상태입니다.\n매크로를 시작하려면 'r'를, 예매 홈페이지에 접속하려면 'e'를 입력하세요. 종료하려면 다른 키워드를 입력하세요.")
         user_input = input()
         print("\n\n\n\n\n")
+
         if user_input.lower() == 'e':
             webbrowser.get("chrome").open_new_tab(mc.RESERVATION_URL)
             time.sleep(1)
@@ -81,6 +80,7 @@ def main():
             continue
         elif user_input.lower() != 'r' :
             break
+
         start_time = datetime.datetime.now().strftime("%H:%M:%S")
         print(f"[{start_time}] 매크로가 실행되었습니다.")
         
@@ -88,14 +88,16 @@ def main():
         # 좌석 그룹 선택
         # pyautogui.moveTo(*CLICK_TICKET)
         # pyautogui.click()
-        #1루 내야일반석 선택
-        # pyautogui.scroll(-10)
-        # pyautogui.moveTo(CLICK_TICKET[0],CLICK_TICKET[1]+20)
-        ################
         # pyautogui.click()
-        # 다음 단계 버튼 클릭
-        pyautogui.moveTo(*CLICK_DESTINATION)
-        pyautogui.click()
+
+        # # # 매진된 좌석 어쩌구 확인하기 누르기
+        # pyautogui.moveTo((634,179))
+        # time.sleep(0.1)
+        # pyautogui.press('enter')
+        # # ##################
+        # # # 다음 단계 버튼 클릭
+        # pyautogui.moveTo(*CLICK_DESTINATION)
+        # pyautogui.click()
         
         ##################################
         ####좌석 클릭후 좌석선택완료 버튼 누르고 나면 이선좌통과####
@@ -103,9 +105,9 @@ def main():
         search_thread = threading.Thread(target=thread_SearchColor, args=(stop_event,))
         refresh_thread = threading.Thread(target=thread_Refresh, args=(stop_event, REFRESH_REGION))
         search_thread.start()
-        # refresh_thread.start()
+        refresh_thread.start()
         search_thread.join()
-        # refresh_thread.join()
+        refresh_thread.join()
 
     terminate_time = datetime.datetime.now().strftime("%H:%M:%S")
     print(f"[{terminate_time}]프로그램이 종료됩니다.")
